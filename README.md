@@ -2,7 +2,6 @@
 
 This extension adds the "Quicker..." context menu entry which opens a lightweight dialog to select all available context menu entries more easily by typing parts of the name or choosing one stored in the history.
 
-![Quicker Context Menu](images/quicker-context-menu.png)
 ![Quicker Context Dialog](images/quicker-context-dialog.png)
 
 ## Usage
