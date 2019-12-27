@@ -16,30 +16,30 @@ public class History {
         this.index = history.size() - 1; // might be -1;
     }
 
-    public String getCurrent() {
+    public History next() {
+        if (index != -1) {
+            this.index = Math.floorMod(++this.index, history.size());
+        }
+        return this;
+    }
+
+    public History previous() {
+        if (index != -1) {
+            this.index = Math.floorMod(--this.index, history.size());
+        }
+        return this;
+    }
+
+    public boolean isEmpty() {
+        return history.isEmpty();
+    }
+
+    @Override
+    public String toString() {
         if (index != -1) {
             return history.get(index);
         }
         return null;
     }
 
-    public String getNext() {
-        if (index != -1) {
-            this.index = Math.floorMod(++this.index, history.size());
-            return history.get(this.index);
-        }
-        return null;
-    }
-
-    public String getPrevious() {
-        if (index != -1) {
-            this.index = Math.floorMod(--this.index, history.size());
-            return history.get(this.index);
-        }
-        return null;
-    }
-
-    public boolean isEmpty() {
-        return history.isEmpty();
-    }
 }
