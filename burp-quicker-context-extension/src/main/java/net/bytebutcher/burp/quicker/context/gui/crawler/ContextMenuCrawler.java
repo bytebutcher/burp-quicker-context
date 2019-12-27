@@ -1,13 +1,10 @@
 package net.bytebutcher.burp.quicker.context.gui.crawler;
 
-import burp.BurpExtender;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.bytebutcher.burp.quicker.context.gui.model.ContextMenuEvent;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,13 +12,7 @@ import java.util.stream.Stream;
 
 public class ContextMenuCrawler {
 
-    private final BurpExtender burpExtender;
-
-    public ContextMenuCrawler(BurpExtender burpExtender) {
-        this.burpExtender = burpExtender;
-    }
-
-    public Map<String, JMenuItem> getContextMenuEntries(Container container, List<String> path) {
+    public static Map<String, JMenuItem> getContextMenuEntries(Container container, List<String> path) {
         Map<String, JMenuItem> entries = Maps.newLinkedHashMap();
         if (container == null) {
             return entries;
@@ -54,12 +45,4 @@ public class ContextMenuCrawler {
         return entries;
     }
 
-    public void execute(String selectedItem, ContextMenuEvent contextMenuEvent) {
-        Map<String, JMenuItem> contextMenuEntries = getContextMenuEntries(contextMenuEvent.getSource(), Lists.newArrayList());
-        if (contextMenuEntries.get(selectedItem) != null) {
-            for (ActionListener actionListener : contextMenuEntries.get(selectedItem).getActionListeners()) {
-                actionListener.actionPerformed(contextMenuEvent.getActionEvent());
-            }
-        }
-    }
 }

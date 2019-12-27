@@ -21,7 +21,6 @@ public class BurpExtender implements IBurpExtender, ITab {
     private static PrintWriter stderr;
     public static BurpExtender instance = null;
 
-    private ContextMenuCrawler contextMenuCrawler;
     private JPanel panel = new JPanel();
     private Container parent;
     private Config config;
@@ -63,13 +62,6 @@ public class BurpExtender implements IBurpExtender, ITab {
 
     private QuickerContextDialog getQuickerContextDialog(ContextMenuEvent contextMenuEvent) {
         return new QuickerContextDialog(this, contextMenuEvent);
-    }
-
-    public ContextMenuCrawler getContextMenuCrawler() {
-        if (contextMenuCrawler == null) {
-            contextMenuCrawler = new ContextMenuCrawler(this);
-        }
-        return contextMenuCrawler;
     }
 
     public IBurpExtenderCallbacks getCallbacks() {

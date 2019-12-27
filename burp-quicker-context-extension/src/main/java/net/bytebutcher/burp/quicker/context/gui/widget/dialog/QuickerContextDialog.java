@@ -6,7 +6,9 @@ import com.google.common.collect.Lists;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import net.bytebutcher.burp.quicker.context.gui.crawler.ContextMenuCrawler;
 import net.bytebutcher.burp.quicker.context.gui.model.ContextMenuEvent;
+import net.bytebutcher.burp.quicker.context.gui.processor.ContextMenuProcessor;
 import net.bytebutcher.burp.quicker.context.gui.util.DialogUtil;
 import net.bytebutcher.burp.quicker.context.gui.util.ImageUtil;
 import net.bytebutcher.burp.quicker.context.gui.widget.combobox.FilterComboBox;
@@ -16,6 +18,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -24,10 +27,9 @@ public class QuickerContextDialog extends JDialog {
     public JPanel rootComponent;
     protected JComboBox<String> comboBox;
     private JButton btnRun;
-    private JLabel lblInfoText;
     private JLabel lblHistoryNext;
     private JLabel lblHistoryPrev;
-    private Set<String> contextMenuEntries;
+    private Map<String, JMenuItem> contextMenuEntries;
     private History history;
 
     private final ContextMenuEvent contextMenuEvent;
@@ -85,7 +87,7 @@ public class QuickerContextDialog extends JDialog {
     }
 
     protected void setupHistory() {
-        history = new History(getContextMenuEntries(contextMenuEvent), burpExtender);
+        history = new History(getContextMenuEntries(contextMenuEvent).keySet(), burpExtender);
         JTextField textField = (JTextField) comboBox.getEditor().getEditorComponent();
         setupHistoryTraversalKeys(textField, history, burpExtender);
         setupHistoryButtons(textField);
@@ -116,7 +118,7 @@ public class QuickerContextDialog extends JDialog {
     }
 
     public void initializeComboBox() {
-        Set<String> contextMenuEntries = getContextMenuEntries(contextMenuEvent);
+        Set<String> contextMenuEntries = getContextMenuEntries(contextMenuEvent).keySet();
         for (String tabCaption : contextMenuEntries) {
             comboBox.addItem(tabCaption);
         }
@@ -126,10 +128,10 @@ public class QuickerContextDialog extends JDialog {
         SwingUtilities.invokeLater(() -> comboBox.getEditor().selectAll());
     }
 
-    private Set<String> getContextMenuEntries(ContextMenuEvent contextMenu) {
+    private Map<String, JMenuItem> getContextMenuEntries(ContextMenuEvent contextMenu) {
         if (contextMenuEntries == null) {
-            contextMenuEntries = burpExtender.getContextMenuCrawler().getContextMenuEntries(contextMenu.getSource(), Lists
-                    .newArrayList()).keySet();
+            contextMenuEntries = ContextMenuCrawler.getContextMenuEntries(contextMenu.getSource(), Lists
+                    .newArrayList());
         }
         return contextMenuEntries;
     }
@@ -189,7 +191,7 @@ public class QuickerContextDialog extends JDialog {
     public void execute() {
         String selectedItem = getSelectedItem();
         saveToHistory(selectedItem);
-        burpExtender.getContextMenuCrawler().execute(selectedItem, contextMenuEvent);
+        ContextMenuProcessor.process(selectedItem, getContextMenuEntries(contextMenuEvent), contextMenuEvent);
     }
 
     public void requestFocus() {
@@ -208,32 +210,24 @@ public class QuickerContextDialog extends JDialog {
         rootComponent = new JPanel();
         rootComponent.setLayout(new BorderLayout(0, 0));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new GridLayoutManager(1, 3, new Insets(0, 5, 0, 0), -1, -1));
         rootComponent.add(panel1, BorderLayout.CENTER);
-        panel1.add(comboBox, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        panel1.add(panel2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        lblHistoryPrev = new JLabel();
-        lblHistoryPrev.setText("");
-        lblHistoryPrev.setToolTipText("Click to select the previous entry in history [CTRL+SHIFT+TAB]");
-        panel2.add(lblHistoryPrev, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_SOUTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        lblHistoryNext = new JLabel();
-        lblHistoryNext.setText("");
-        lblHistoryNext.setToolTipText("Click to select the next entry in history [CTRL+TAB]");
-        panel2.add(lblHistoryNext, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_SOUTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel1.add(comboBox, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         btnRun = new JButton();
         btnRun.setText("Run");
         btnRun.setToolTipText("Click Run to execute the selected entry [ENTER]");
-        panel1.add(btnRun, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JPanel panel3 = new JPanel();
-        panel3.setLayout(new GridLayoutManager(1, 2, new Insets(4, 4, 0, 4), -1, -1));
-        panel1.add(panel3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        lblInfoText = new JLabel();
-        lblInfoText.setText("Click \"Run\" or press ENTER to execute the currently selected context menu entry");
-        panel3.add(lblInfoText, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer1 = new Spacer();
-        panel3.add(spacer1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel1.add(btnRun, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.add(panel2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        lblHistoryPrev = new JLabel();
+        lblHistoryPrev.setText("");
+        lblHistoryPrev.setToolTipText("Click to select the previous entry in history [CTRL+SHIFT+TAB]");
+        panel2.add(lblHistoryPrev, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        lblHistoryNext = new JLabel();
+        lblHistoryNext.setText("");
+        lblHistoryNext.setToolTipText("Click to select the next entry in history [CTRL+TAB]");
+        panel2.add(lblHistoryNext, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
