@@ -51,6 +51,7 @@ public class QuickerContextDialog extends JDialog {
         requestFocus();
         setSize(250, 50);
         pack();
+        setIconImages(((Window) burpExtender.getParent()).getIconImages());
         setModal(true);
         setTitle("Quicker Context");
         setLocation(DialogUtil.getX(burpExtender.getParent(), this), DialogUtil.getY(burpExtender.getParent(), this));
