@@ -7,7 +7,6 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import net.bytebutcher.burp.quicker.context.gui.crawler.ContextMenuCrawler;
 import net.bytebutcher.burp.quicker.context.gui.model.ContextMenuEvent;
-import net.bytebutcher.burp.quicker.context.gui.processor.ContextMenuProcessor;
 import net.bytebutcher.burp.quicker.context.gui.util.DialogUtil;
 import net.bytebutcher.burp.quicker.context.gui.widget.combobox.FilterComboBox;
 import net.bytebutcher.burp.quicker.context.model.History;
@@ -135,7 +134,7 @@ public class QuickerContextDialog extends JDialog {
     }
 
     private void saveToHistory(String selectedItem) {
-        Queue<String> history = EvictingQueue.create(10);
+        Queue<String> history = EvictingQueue.create(20);
         history.addAll(burpExtender.getConfig().loadHistory());
         while (history.contains(selectedItem)) {
             history.remove(selectedItem);
@@ -187,9 +186,13 @@ public class QuickerContextDialog extends JDialog {
     }
 
     public void execute() {
-        String selectedItem = getSelectedItem();
-        saveToHistory(selectedItem);
-        ContextMenuProcessor.process(selectedItem, getContextMenuEntries(contextMenuEvent), contextMenuEvent);
+        saveToHistory(getSelectedItem());
+        JMenuItem selectedMenuItem = getContextMenuEntries(contextMenuEvent).get(getSelectedItem());
+        if (selectedMenuItem != null) {
+            for (ActionListener actionListener : selectedMenuItem.getActionListeners()) {
+                actionListener.actionPerformed(contextMenuEvent.getActionEvent());
+            }
+        }
     }
 
     public void requestFocus() {
