@@ -72,7 +72,7 @@ public class BurpColorUtil {
         return null;
     }
 
-    /** Returns a color with the specified case-insensitive name.*/
+    /** Returns the name of the color, or null, when no color name was found. */
     public static String getName(Color color) {
         return color2name.get(color);
     }
@@ -114,6 +114,7 @@ public class BurpColorUtil {
     public static final Color pink = new Color(0xffc8c8);
     public static final Color magenta = new Color(0xff64ff);
     public static final Color gray = new Color(0xb4b4b4);
+    public static final Color dark = new Color(0x3c3f41);
 
     static {
         initColorsMap();
