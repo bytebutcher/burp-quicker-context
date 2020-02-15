@@ -1,7 +1,7 @@
 package burp;
 
 import com.google.common.collect.Lists;
-import net.bytebutcher.burp.quicker.context.gui.crawler.ContextMenuCrawler;
+import net.bytebutcher.burp.quicker.context.gui.crawler.TabsCrawler;
 import net.bytebutcher.burp.quicker.context.gui.model.ContextMenuEvent;
 import net.bytebutcher.burp.quicker.context.gui.widget.dialog.QuickerContextDialog;
 import net.bytebutcher.burp.quicker.context.model.Config;
@@ -44,24 +44,29 @@ public class BurpExtender implements IBurpExtender, ITab {
     }
 
     private void initContextMenuEntry() {
-        callbacks.registerContextMenuFactory(new IContextMenuFactory() {
-            @Override
-            public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-                JMenuItem quickerContextMenu = new JMenuItem();
-                quickerContextMenu.setAction(new AbstractAction("Quicker...") {
+
+
+        SwingUtilities.invokeLater(() -> {
+            callbacks.addSuiteTab(this);
+            JTabbedPane tabbedPane = (JTabbedPane) this.getUiComponent().getParent();
+            SwingUtilities.invokeLater(() -> {
+                callbacks.registerContextMenuFactory(new IContextMenuFactory() {
                     @Override
-                    public void actionPerformed(ActionEvent e) {
-                        getQuickerContextDialog(new ContextMenuEvent(quickerContextMenu.getParent(), e));
+                    public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
+                        JMenuItem quickerContextMenu = new JMenuItem();
+                        quickerContextMenu.setAction(new AbstractAction("Quicker...") {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                new QuickerContextDialog(BurpExtender.this, new ContextMenuEvent(quickerContextMenu.getParent(), e), new TabsCrawler(tabbedPane));
+                            }
+
+                        });
+                        return Lists.newArrayList(quickerContextMenu);
                     }
-
                 });
-                return Lists.newArrayList(quickerContextMenu);
-            }
+            });
+            callbacks.removeSuiteTab(this);
         });
-    }
-
-    private QuickerContextDialog getQuickerContextDialog(ContextMenuEvent contextMenuEvent) {
-        return new QuickerContextDialog(this, contextMenuEvent);
     }
 
     public IBurpExtenderCallbacks getCallbacks() {

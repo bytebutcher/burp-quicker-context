@@ -3,8 +3,10 @@ package net.bytebutcher.burp.quicker.context.gui.widget.dialog;
 import burp.BurpExtender;
 import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import net.bytebutcher.burp.quicker.context.gui.crawler.TabsCrawler;
 import net.bytebutcher.burp.quicker.context.gui.crawler.ContextMenuCrawler;
 import net.bytebutcher.burp.quicker.context.gui.model.ContextMenuEvent;
 import net.bytebutcher.burp.quicker.context.gui.util.DialogUtil;
@@ -30,10 +32,12 @@ public class QuickerContextDialog extends JDialog {
     private History history;
 
     private final ContextMenuEvent contextMenuEvent;
+    private final TabsCrawler tabsCrawler;
 
-    public QuickerContextDialog(BurpExtender burpExtender, ContextMenuEvent contextMenuEvent) {
+    public QuickerContextDialog(BurpExtender burpExtender, ContextMenuEvent contextMenuEvent, TabsCrawler tabsCrawler) {
         this.burpExtender = burpExtender;
         this.contextMenuEvent = contextMenuEvent;
+        this.tabsCrawler = tabsCrawler;
         $$$setupUI$$$();
         this.setLayout(new BorderLayout());
         this.setContentPane(rootComponent);
@@ -127,8 +131,10 @@ public class QuickerContextDialog extends JDialog {
 
     private Map<String, JMenuItem> getContextMenuEntries(ContextMenuEvent contextMenu) {
         if (contextMenuEntries == null) {
-            contextMenuEntries = ContextMenuCrawler.getContextMenuEntries(contextMenu.getSource(), Lists
-                    .newArrayList());
+            contextMenuEntries = Maps.newHashMap();
+            contextMenuEntries.putAll(ContextMenuCrawler.getContextMenuEntries(contextMenu.getSource(), Lists
+                    .newArrayList()));
+            contextMenuEntries.putAll(tabsCrawler.getContextMenuEntries());
         }
         return contextMenuEntries;
     }
