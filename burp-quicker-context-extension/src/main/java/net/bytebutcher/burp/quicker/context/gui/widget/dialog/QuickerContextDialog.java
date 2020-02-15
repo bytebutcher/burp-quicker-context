@@ -6,10 +6,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import net.bytebutcher.burp.quicker.context.gui.crawler.TabsCrawler;
-import net.bytebutcher.burp.quicker.context.gui.crawler.ContextMenuCrawler;
-import net.bytebutcher.burp.quicker.context.gui.model.ContextMenuEvent;
-import net.bytebutcher.burp.quicker.context.gui.util.DialogUtil;
+import net.bytebutcher.burp.quicker.context.gui.crawler.ICrawler;
+import net.bytebutcher.burp.util.DialogUtil;
 import net.bytebutcher.burp.quicker.context.gui.widget.combobox.FilterComboBox;
 import net.bytebutcher.burp.quicker.context.model.History;
 
@@ -20,6 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.List;
 
 public class QuickerContextDialog extends JDialog {
     protected final BurpExtender burpExtender;
@@ -31,20 +30,18 @@ public class QuickerContextDialog extends JDialog {
     private Map<String, JMenuItem> contextMenuEntries;
     private History history;
 
-    private final ContextMenuEvent contextMenuEvent;
-    private final TabsCrawler tabsCrawler;
+    private final List<ICrawler> crawlers;
 
-    public QuickerContextDialog(BurpExtender burpExtender, ContextMenuEvent contextMenuEvent, TabsCrawler tabsCrawler) {
+    public QuickerContextDialog(BurpExtender burpExtender, List<ICrawler> crawlers) {
         this.burpExtender = burpExtender;
-        this.contextMenuEvent = contextMenuEvent;
-        this.tabsCrawler = tabsCrawler;
+        this.crawlers = crawlers;
         $$$setupUI$$$();
         this.setLayout(new BorderLayout());
         this.setContentPane(rootComponent);
         btnRun.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                execute();
+                execute(new ActionEvent(e.getSource(), e.getID(), e.paramString()));
                 dispose();
             }
         });
@@ -67,7 +64,7 @@ public class QuickerContextDialog extends JDialog {
             public void keyReleased(KeyEvent e) {
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_ENTER:
-                        execute();
+                        execute(new ActionEvent(e.getSource(), e.getID(), e.paramString()));
                         dispose();
                         break;
                     case KeyEvent.VK_ESCAPE:
@@ -80,7 +77,7 @@ public class QuickerContextDialog extends JDialog {
         rootComponent.registerKeyboardAction(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                execute();
+                execute(e);
                 dispose();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -89,7 +86,7 @@ public class QuickerContextDialog extends JDialog {
     }
 
     protected void setupHistory() {
-        history = new History(getContextMenuEntries(contextMenuEvent).keySet(), burpExtender);
+        history = new History(getContextMenuEntries().keySet(), burpExtender);
         JTextField textField = (JTextField) cmbSearch.getEditor().getEditorComponent();
         setupHistoryTraversalKeys(textField, history, burpExtender);
         setupHistoryButtons(textField);
@@ -119,7 +116,7 @@ public class QuickerContextDialog extends JDialog {
     }
 
     public void initializeComboBox() {
-        Set<String> contextMenuEntries = getContextMenuEntries(contextMenuEvent).keySet();
+        Set<String> contextMenuEntries = getContextMenuEntries().keySet();
         for (String tabCaption : contextMenuEntries) {
             cmbSearch.addItem(tabCaption);
         }
@@ -129,12 +126,12 @@ public class QuickerContextDialog extends JDialog {
         SwingUtilities.invokeLater(() -> cmbSearch.getEditor().selectAll());
     }
 
-    private Map<String, JMenuItem> getContextMenuEntries(ContextMenuEvent contextMenu) {
+    private Map<String, JMenuItem> getContextMenuEntries() {
         if (contextMenuEntries == null) {
             contextMenuEntries = Maps.newHashMap();
-            contextMenuEntries.putAll(ContextMenuCrawler.getContextMenuEntries(contextMenu.getSource(), Lists
-                    .newArrayList()));
-            contextMenuEntries.putAll(tabsCrawler.getContextMenuEntries());
+            for (ICrawler crawler : crawlers) {
+                contextMenuEntries.putAll(crawler.getContextMenuEntries());
+            }
         }
         return contextMenuEntries;
     }
@@ -191,12 +188,12 @@ public class QuickerContextDialog extends JDialog {
         return cmbSearch.getItemAt(cmbSearch.getSelectedIndex());
     }
 
-    public void execute() {
+    public void execute(ActionEvent e) {
         saveToHistory(getSelectedItem());
-        JMenuItem selectedMenuItem = getContextMenuEntries(contextMenuEvent).get(getSelectedItem());
+        JMenuItem selectedMenuItem = getContextMenuEntries().get(getSelectedItem());
         if (selectedMenuItem != null) {
             for (ActionListener actionListener : selectedMenuItem.getActionListeners()) {
-                actionListener.actionPerformed(contextMenuEvent.getActionEvent());
+                actionListener.actionPerformed(e);
             }
         }
     }

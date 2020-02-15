@@ -1,4 +1,4 @@
-package net.bytebutcher.burp.quicker.context.gui.util;
+package net.bytebutcher.burp.util;
 
 import javax.swing.*;
 import java.awt.*;

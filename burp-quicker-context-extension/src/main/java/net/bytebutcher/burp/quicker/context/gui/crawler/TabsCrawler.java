@@ -9,7 +9,7 @@ import java.awt.event.ActionEvent;
 import java.util.Map;
 import java.util.Set;
 
-public class TabsCrawler {
+public class TabsCrawler implements ICrawler {
 
     private final Component tab;
 

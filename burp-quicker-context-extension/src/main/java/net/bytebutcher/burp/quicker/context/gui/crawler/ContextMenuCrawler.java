@@ -12,7 +12,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ContextMenuCrawler {
+public class ContextMenuCrawler implements ICrawler {
+
+    private final Container source;
 
     private static class ContextMenuEntry {
 
@@ -68,7 +70,15 @@ public class ContextMenuCrawler {
         }
     }
 
-    public static Map<String, JMenuItem> getContextMenuEntries(Container container, List<String> path) {
+    public ContextMenuCrawler(Container source) {
+        this.source = source;
+    }
+
+    public Map<String, JMenuItem> getContextMenuEntries() {
+        return getContextMenuEntries(source, Lists.newArrayList());
+    }
+
+    public Map<String, JMenuItem> getContextMenuEntries(Container container, List<String> path) {
         Map<String, JMenuItem> entries = Maps.newLinkedHashMap();
         if (container == null) {
             return entries;
