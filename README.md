@@ -19,6 +19,8 @@ The Quicker Context Dialog can be completely controlled using the keyboard:
 This project was built using IntelliJ and Gradle. When you make changes to the source (and especially the GUI) you should apply following settings within Intellij to make sure that everything builds successfully:
 * File -> Settings -> Editor -> GUI Designer -> Generate GUI into: Java source
 * File -> Settings -> Build, Execution, Deployment -> Compiler -> Build project automatically
+* File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> B
+uild and run using: IntelliJ IDEA
 
 When the GUI is not updated correctly you may rebuild the project manually:
 * Build -> Rebuild Project
