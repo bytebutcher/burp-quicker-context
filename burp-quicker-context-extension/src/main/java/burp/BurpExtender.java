@@ -1,6 +1,7 @@
 package burp;
 
 import com.google.common.collect.Lists;
+import net.bytebutcher.burp.quicker.context.gui.crawler.ApplicationMenuCrawler;
 import net.bytebutcher.burp.quicker.context.gui.crawler.ContextMenuCrawler;
 import net.bytebutcher.burp.quicker.context.gui.crawler.TabsCrawler;
 import net.bytebutcher.burp.quicker.context.gui.keystroke.KeyStrokeListener;
@@ -61,23 +62,24 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
     }
 
     private void initContextMenuEntry() {
-            JTabbedPane tabbedPane = (JTabbedPane) this.getUiComponent().getParent();
-            SwingUtilities.invokeLater(() -> {
-                callbacks.registerContextMenuFactory(new IContextMenuFactory() {
-                    @Override
-                    public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
-                        JMenuItem quickerContextMenu = new JMenuItem();
-                        quickerContextMenu.setAction(new AbstractAction("Quicker...") {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                new QuickerContextDialog(BurpExtender.this, Lists.newArrayList(new ContextMenuCrawler(quickerContextMenu.getParent()), new TabsCrawler(tabbedPane)));
-                            }
+        JTabbedPane tabbedPane = (JTabbedPane) this.getUiComponent().getParent();
+        JRootPane rootPane = SwingUtilities.getRootPane(tabbedPane);
+        SwingUtilities.invokeLater(() -> {
+            callbacks.registerContextMenuFactory(new IContextMenuFactory() {
+                @Override
+                public List<JMenuItem> createMenuItems(IContextMenuInvocation invocation) {
+                    JMenuItem quickerContextMenu = new JMenuItem();
+                    quickerContextMenu.setAction(new AbstractAction("Quicker...") {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            new QuickerContextDialog(BurpExtender.this, Lists.newArrayList(new ContextMenuCrawler(quickerContextMenu.getParent()), new TabsCrawler(tabbedPane), new ApplicationMenuCrawler(rootPane.getJMenuBar())));
+                        }
 
-                        });
-                        return Lists.newArrayList(quickerContextMenu);
-                    }
-                });
+                    });
+                    return Lists.newArrayList(quickerContextMenu);
+                }
             });
+        });
     }
 
     private void initKeyStrokeManager() {
@@ -91,8 +93,9 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
                         if (quickerKeyBinding != null) {
                             if (quickerKeyBinding.equals(keyStroke)) {
                                 JTabbedPane tabbedPane = (JTabbedPane) BurpExtender.this.getUiComponent().getParent();
+                                JRootPane rootPane = SwingUtilities.getRootPane(tabbedPane);
                                 isQuickerContextDialogVisible = true;
-                                new QuickerContextDialog(BurpExtender.this, Lists.newArrayList(new TabsCrawler(tabbedPane)));
+                                new QuickerContextDialog(BurpExtender.this, Lists.newArrayList(new TabsCrawler(tabbedPane), new ApplicationMenuCrawler(rootPane.getJMenuBar())));
                                 isQuickerContextDialogVisible = false;
                             }
                         }
