@@ -1,6 +1,6 @@
 # Burp-Quicker-Context-Extension
 
-This extension adds the "Quicker Context" dialog which is a lightweight dialog to quickly select tabs or execute application- and context-menu-entries more easily by typing parts of the name or choosing one stored in history. The dialog can either be opened using the "Quicker..." context menu entry or by pressing a customizable keyboard shortcut (default = shift + space).
+This extension adds the "Quicker Context" dialog which is a lightweight dialog to select tabs or execute application- and context-menu-entries more easily by typing parts of the name or choosing one stored in history. The dialog can either be opened using the "Quicker..." context-menu-entry or by pressing a customizable keyboard shortcut (default = shift + space).
 
 ![Quicker Context Dialog](images/quicker-context-dialog.png)
 
@@ -8,15 +8,15 @@ This extension adds the "Quicker Context" dialog which is a lightweight dialog t
 
 The Quicker Context Dialog can be completely controlled using the keyboard:
 
-* ARROW-UP/ARROW-DOWN: Select context menu entry in list
-* ENTER: Run selected contex menu entry
-* CTRL+TAB: Next context menu entry in history
-* CTRL+SHIFT+TAB: Previous context menu entry in history
-* ESCAPE: Close the dialog
+* **ARROW-UP/ARROW-DOWN:** Select context menu entry in list
+* **ENTER:** Run selected contex menu entry
+* **CTRL+TAB:** Next context menu entry in history
+* **CTRL+SHIFT+TAB:** Previous context menu entry in history
+* **ESCAPE:** Close the dialog
 
 ## Limitations
 
-Currently context-menu-entries can only be selected when the "Quicker Context" dialog is opened via the "Quicker..." context menu entry. 
+Currently context-menu-entries can only be selected when the "Quicker Context" dialog is opened via the "Quicker..." context-menu-entry. 
 
 ## Build
 
