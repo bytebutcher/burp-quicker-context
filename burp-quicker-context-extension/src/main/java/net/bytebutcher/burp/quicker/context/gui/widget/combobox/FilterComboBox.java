@@ -1,14 +1,14 @@
 package net.bytebutcher.burp.quicker.context.gui.widget.combobox;
+
 import com.google.common.collect.Lists;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.swing.*;
 
 public class FilterComboBox<E> extends JComboBox<E> {
     protected List<E> entries;
@@ -24,7 +24,9 @@ public class FilterComboBox<E> extends JComboBox<E> {
         final JTextField textfield = (JTextField) editorComponent;
         textfield.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e) {
-                SwingUtilities.invokeLater(() -> comboFilter(textfield.getText()));
+                if (!e.isControlDown() && !e.isAltDown() && !e.isAltGraphDown() && !e.isMetaDown()) {
+                    SwingUtilities.invokeLater(() -> comboFilter(textfield.getText()));
+                }
             }
         });
     }
@@ -75,9 +77,11 @@ public class FilterComboBox<E> extends JComboBox<E> {
     public void comboFilter(String enteredText) {
         List<E> entriesFiltered = getFilteredEntries(enteredText);
         if (entriesFiltered.size() > 0) {
+            int caretPosition = ((JTextField) editor.getEditorComponent()).getCaretPosition();
             this.setModel(new DefaultComboBoxModel(entriesFiltered.toArray()));
             this.setSelectedItem(enteredText);
             this.showPopup();
+            ((JTextField) editor.getEditorComponent()).setCaretPosition(caretPosition);
         } else {
             this.hidePopup();
         }
