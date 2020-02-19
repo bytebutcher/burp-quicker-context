@@ -5,11 +5,35 @@ import com.google.common.collect.Maps;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 public class ApplicationMenuCrawler implements ICrawler {
+
+    /**
+     * This class fixes a problem where the JMenuItem action couldn't be executed since the Action's actionPerformed
+     * method required a specific ActionEvent.
+     */
+    static class ContextMenuItem extends JMenuItem {
+
+        private final ActionEvent actionEvent;
+
+        public ContextMenuItem(JMenuItem menuItem) {
+            this.actionEvent = new ActionEvent(menuItem, 0, "");
+            addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (ActionListener actionListener : menuItem.getActionListeners()) {
+                        actionListener.actionPerformed(actionEvent);
+                    }
+                }
+            });
+        }
+
+    }
 
     private final JMenuBar menuBar;
 
@@ -40,7 +64,7 @@ public class ApplicationMenuCrawler implements ICrawler {
             } else if (component instanceof JMenuItem) {
                 JMenuItem item = (JMenuItem) component;
                 path.push(item.getText());
-                result.put(String.join(" > ", path), item);
+                result.put(String.join(" > ", path), new ContextMenuItem(item));
                 path.pop();
             } else {
                 // Do nothing ...
