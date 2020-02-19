@@ -41,7 +41,7 @@ public class TabsCrawler implements ICrawler {
                     tab.select();
                 }
             });
-            menuEntries.put(tabPath, item);
+            menuEntries.put("Tab > " + tabPath, item);
         }
         return menuEntries;
     }
